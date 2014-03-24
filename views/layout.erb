@@ -42,14 +42,16 @@
 			</ul>
 		</div><!--/.nav-collapse -->
 	</div>
-	<div>
-		<h1>
+	<div class="text-center">
+		<h1 id="topicword">
 			<%= word %>
 		</h1>
-		<%= up %>
-		<%= down %>
-		<a id="up" word="<%= word %>" >Good</a>
-		<a id="down" word="<%= word %>" >Bad</a>
+		<h3 id="upval" style="float: left" ><%= up %></h3>
+		<h3 id="downval" style="float: right" ><%= down %></h3>
+		<div class="button-group">
+			<button type="button" id="up" class="btn btn-default" word="<%= word %>" >Good</button>
+			<button type="button" id="down" class="btn btn-default" word="<%= word %>" >Bad</button>
+		</div>
 	</div>
 
 </div>
@@ -60,11 +62,31 @@
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="/assets/js/bootstrap.min.js"></script>
 <script type="text/javascript">
-$("#up").click(function(e){
-		var w = $(this).attr("word");
-		$.post( "/up/"+ w )
-	}
-);
+$(document).ready(function(){
+	$("#up").click(function(){
+			var w = $(this).attr("word");
+			$.post( "/up/"+ w )
+			getNewWord();
+		}
+	);
+	$("#down").click(function(){
+			var w = $(this).attr("word");
+			$.post( "/down/"+ w )
+			getNewWord();
+		}
+	);
+});
+function getNewWord(){
+	$.get('/word/', function(content){
+			result = $.parseJSON(content);
+			$('#topicword').html(result['word']);
+			$('#up').attr('word', result['word']);
+			$('#upval').html(result['up']);
+			$('#down').attr('word', result['word']);
+			$('#downval').html(result['down']);
+			return false;
+	});
+}
 </script>
 </body>
 </html>

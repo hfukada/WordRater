@@ -3,6 +3,7 @@ require 'rubygems'
 require 'mongo'
 require 'tempfile'
 require 'fileutils'
+require 'json'
 
 include Mongo
 
@@ -20,18 +21,15 @@ class DictRater
 	end
 
 	def voteUp( word )
-		puts word
-		entry = @db.collection('words').find({'word' => cleanword(word)}).to_a
-		puts entry
-		entry[:up] += 1
-		@db.collection('words').update({"_id" => entry[:id]}, {"$set" => {:up => entry[:up]}})
+		entry = @db.collection('words').find({'word' => cleanword(word)}).to_a()[0]
+		entry['up'] += 1
+		@db.collection('words').update({'word' => entry["word"]}, {'$set' => {'up' => entry['up']}})
 	end
 
 	def voteDown( word )
-		entry = @db.collection('words').find({'word' => cleanword(word)})
-		puts entry
-		entry[:down] += 1
-		@db.collection('words').update({"_id" => entry[:id]}, {"$set" => {:up => entry[:up]}})
+		entry = @db.collection('words').find({'word' => cleanword(word)}).to_a()[0]
+		entry['down'] += 1
+		@db.collection('words').update({"word" => entry["word"]}, {"$set" => {"down" => entry["down"]}})
 	end
 
 	def getRandomWord()
@@ -52,14 +50,17 @@ get '/' do
 	erb "<%= word =>", :locals => {:word => word["word"], :up => word["up"], :down => word["down"]}
 end
 
+get '/word/' do
+	word = rater.getRandomWord
+	word.to_json
+end
+
 post '/up/:word' do |word|
 	rater.voteUp(word)
-	word = rater.getRandomWord
-	erb "<%= word =>", :locals => {:word => word["word"], :up => word["up"], :down => word["down"]}
+	return
 end
 
 post '/down/:word' do |word|
 	rater.voteDown(word)
-	word = rater.getRandomWord
-	erb "<%= word =>", :locals => {:word => word["word"], :up => word["up"], :down => word["down"]}
+	return
 end
