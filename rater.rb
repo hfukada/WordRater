@@ -22,14 +22,24 @@ class DictRater
 
 	def voteUp( word )
 		entry = @db.collection('words').find({'word' => cleanword(word)}).to_a()[0]
-		entry['up'] += 1
-		@db.collection('words').update({'word' => entry["word"]}, {'$set' => {'up' => entry['up']}})
+		if entry.nil?
+			insertWord(cleanword(word), 1)
+			return
+		end
+		@db.collection('words').update({'word' => entry["word"]}, {'$set' => {'score' => entry['score']+1, 'weight' => entry['weight']+1}})
 	end
 
 	def voteDown( word )
 		entry = @db.collection('words').find({'word' => cleanword(word)}).to_a()[0]
-		entry['down'] += 1
-		@db.collection('words').update({"word" => entry["word"]}, {"$set" => {"down" => entry["down"]}})
+		if entry.nil?
+			insertWord(cleanword(word), -1)
+			return
+		end
+		@db.collection('words').update({"word" => entry["word"]}, {"$set" => {"score" => entry["score"]-1, 'weight' => entry['weight']+1}})
+	end
+
+	def insertWord( word , offset)
+		@db.collection('words').insert({"word" => word, "score" => offset, "weight" => 1 })
 	end
 
 	def getRandomWord()
@@ -41,18 +51,38 @@ class DictRater
 		word.gsub(/[^0-9a-z]/i, '')
 	end
 
+	def isNew( word )
+		@db.collection('words').find( "word" => cleanword(word) ).to_a()[0].nil?
+	end
+
+	def getWorst()
+		@db.collection('words').find({},{:limit => 20}).sort(:score => :asc)
+	end
+
+	def getBest()
+		@db.collection('words').find({},{:limit => 20}).sort(:score => :desc)
+	end
+
+	def getPopular()
+		@db.collection('words').find({},{:limit => 20}).sort(:weight => :desc)
+	end
 end
 
 rater = DictRater.new
 
 get '/' do
 	word = rater.getRandomWord
-	erb "<%= word =>", :locals => {:word => word["word"], :up => word["up"], :down => word["down"]}
+	erb "<%= word =>", :locals => {:word => word["word"], :score => word["weight"], :weight => word["weight"], :worst => rater.getWorst, :best => rater.getBest}
 end
 
 get '/word/' do
 	word = rater.getRandomWord
 	word.to_json
+end
+
+post '/new/:word' do |word|
+	rater.insertWord(word, 0) if rater.isNew(word)
+	return
 end
 
 post '/up/:word' do |word|
@@ -63,4 +93,9 @@ end
 post '/down/:word' do |word|
 	rater.voteDown(word)
 	return
+end
+
+configure do
+	set :port => 3000 
+	set :bind => '0.0.0.0'
 end

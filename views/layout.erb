@@ -14,46 +14,74 @@
 <![endif]-->
 </head>
 <body>
-<div class="container">
+<div id="page" class="container">
 	<div class="navbar navbar-default" role="navigation">
 		<div class="navbar-header">
-			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-				<span class="sr-only">Toggle navigation</span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
 			<a class="navbar-brand" href="/">Word Rater</a>
 		</div>
-		<div class="navbar-collapse collapse">
-			<ul class="nav navbar-nav">
-				<li><a href="/secure/place">Secret</a></li>
-			</ul>
-			<ul class="nav navbar-nav navbar-right">
-				<li class="dropdown">
-				<a href="#" class="dropdown-toggle" data-toggle="dropdown">lol<b class="caret"></b></a>
-				<ul class="dropdown-menu">
-					<li><a href="/login/form">Login</a></li>
-					<li class="divider"></li>
-					<li><a href="/logout">Logout</a></li>
-				</ul>
-				</li>
-
-			</ul>
-		</div><!--/.nav-collapse -->
 	</div>
 	<div class="text-center">
 		<h1 id="topicword">
 			<%= word %>
 		</h1>
-		<h3 id="upval" style="float: left" ><%= up %></h3>
-		<h3 id="downval" style="float: right" ><%= down %></h3>
-		<div class="button-group">
-			<button type="button" id="up" class="btn btn-default" word="<%= word %>" >Good</button>
-			<button type="button" id="down" class="btn btn-default" word="<%= word %>" >Bad</button>
+		<div class="row text-center">
+				<h3 id="score" ><%= score %></h3>
+		</div>
+		<div class="row">
+			<div class="col-lg-6 text-center">
+				<button type="button" id="up" class="btn btn-default" word="<%= word %>" >Good</button>
+			</div>
+			<div class="col-lg-6 text-center">
+				<button type="button" id="down" class="btn btn-default" word="<%= word %>" >Bad</button>
+			</div>
 		</div>
 	</div>
+	<div class="row text-center">
+		<h3> I dare you submit a new word </h3>
+	</div>
+	<div class="row">
+		<div class="col-lg-2">
+		</div>
+		<div class="col-lg-8">
+			<div class="input-group">
+				<input type="text" id="wordbox" class="form-control">
+				<span class="input-group-btn">
+					<button class="btn btn-default" id="newwordbutton" type="button">Submit</button>
+				</span>
+			</div><!-- /input-group -->
+		</div>
+		<div class="col-lg-2">
+		</div>
+	</div><!-- /.row -->
 
+	<h4 class="text-center" > Some of the Best words </h4>
+		<div class="row">
+			<div class="col-lg-4"></div>
+			<div class="col-lg-2 text-center">Word</div>
+			<div class="col-lg-1 text-center">Score</div>
+			<div class="col-lg-1 text-center">Weight</div>
+			<div class="col-lg-4"></div>
+		</div>
+		<% best.each do |wordata| %>
+		<div class="row">
+			<div class="col-lg-4"></div>
+			<div class="col-lg-2 text-center"><%= wordata['word'] %></div>
+			<div class="col-lg-1 text-center"><%= wordata['score'] %></div>
+			<div class="col-lg-1 text-center"><%= wordata['weight'] %></div>
+			<div class="col-lg-4"></div>
+		</div>
+		<% end %>
+
+	<h4 class="text-center" > Some of the Worst words </h4>
+		<% worst.each do |wordata| %>
+		<div class="row">
+			<div class="col-lg-4"></div>
+			<div class="col-lg-2 text-center"><%= wordata['word'] %></div>
+			<div class="col-lg-1 text-center"><%= wordata['score'] %></div>
+			<div class="col-lg-1 text-center"><%= wordata['weight'] %></div>
+			<div class="col-lg-4"></div>
+		</div>
+		<% end %>
 </div>
 
 
@@ -63,29 +91,51 @@
 <script src="/assets/js/bootstrap.min.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
+	$('#wordbox').val('');
 	$("#up").click(function(){
-			var w = $(this).attr("word");
-			$.post( "/up/"+ w )
-			getNewWord();
+			voteUp();
 		}
 	);
 	$("#down").click(function(){
-			var w = $(this).attr("word");
-			$.post( "/down/"+ w )
+			voteDown();
+		}
+	);
+	$("#newwordbutton").click(function(){
+			var w = $('#wordbox').val();
+			$.post( "/new/"+ w )
 			getNewWord();
+			$('#wordbox').val('');
 		}
 	);
 });
+$(document).on('keypress', function(e) {
+		var tag = e.target.tagName.toLowerCase();
+		if ( tag != 'input' && tag != 'textarea') {
+			if ( e.which == 106 || e.which == 105 ) {// vote down a,j
+				voteDown();
+			}
+			else if ( e.which == 119 | e.which == 107 ){ // vote up. w,k
+				voteUp();
+			}
+		}
+	});
 function getNewWord(){
 	$.get('/word/', function(content){
 			result = $.parseJSON(content);
 			$('#topicword').html(result['word']);
-			$('#up').attr('word', result['word']);
-			$('#upval').html(result['up']);
-			$('#down').attr('word', result['word']);
-			$('#downval').html(result['down']);
+			$('#score').html(result['score']);
 			return false;
 	});
+}
+function voteUp(){
+	var w = $('#topicword').html();
+	$.post( "/up/"+ w )
+	getNewWord();
+}
+function voteDown(){
+	var w = $('#topicword').html();
+	$.post( "/down/"+ w )
+	getNewWord();
 }
 </script>
 </body>
