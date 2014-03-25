@@ -102,7 +102,7 @@ $(document).ready(function(){
 	);
 	$("#newwordbutton").click(function(){
 			var w = $('#wordbox').val();
-			$.post( "/new/"+ w )
+			$.post( "/new/"+ encodeURIComponent( w ) )
 			getNewWord();
 			$('#wordbox').val('');
 		}

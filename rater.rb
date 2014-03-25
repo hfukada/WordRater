@@ -4,6 +4,7 @@ require 'mongo'
 require 'tempfile'
 require 'fileutils'
 require 'json'
+require 'erubis'
 
 include Mongo
 
