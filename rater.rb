@@ -39,7 +39,7 @@ class DictRater
 	end
 
 	def insertWord( word , offset)
-		@db.collection('words').insert({"word" => word, "score" => offset, "weight" => 1 })
+		@db.collection('words').insert({"word" => cleanword(word), "score" => offset, "weight" => 1 })
 	end
 
 	def getRandomWord()
@@ -48,7 +48,8 @@ class DictRater
 	end
 
 	def cleanword( word )
-		word.gsub(/[^0-9a-z]/i, '')
+		#word.gsub(/[^0-9a-z]/i, '')
+		word
 	end
 
 	def isNew( word )
