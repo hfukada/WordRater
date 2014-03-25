@@ -72,7 +72,7 @@ rater = DictRater.new
 
 get '/' do
 	word = rater.getRandomWord
-	erb "<%= word =>", :locals => {:word => word["word"], :score => word["weight"], :weight => word["weight"], :worst => rater.getWorst, :best => rater.getBest}
+	erb "<%= word =>", :locals => {:word => word["word"], :score => word["score"], :weight => word["weight"], :worst => rater.getWorst, :best => rater.getBest}
 end
 
 get '/word/' do
