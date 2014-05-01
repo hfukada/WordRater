@@ -4,7 +4,6 @@ require 'mongo'
 require 'tempfile'
 require 'fileutils'
 require 'json'
-require 'erubis'
 
 include Mongo
 
@@ -48,6 +47,10 @@ class DictRater
 		words[rand(words.size)-1]
 	end
 
+	def loadWord( word )
+		@db.collection('words').find({'word' => cleanword(word)}).to_a()[0]
+	end
+
 	def cleanword( word )
 		#word.gsub(/[^0-9a-z]/i, '')
 		word
@@ -80,6 +83,11 @@ end
 get '/word/' do
 	word = rater.getRandomWord
 	word.to_json
+end
+
+get '/theword/:word' do |word|
+	!rater.isNew(word)
+	loadWord(word).to_json
 end
 
 post '/new/:word' do |word|

@@ -103,7 +103,7 @@ $(document).ready(function(){
 	$("#newwordbutton").click(function(){
 			var w = $('#wordbox').val();
 			$.post( "/new/"+ encodeURIComponent( w ) )
-			getNewWord();
+			getTheWord();
 			$('#wordbox').val('');
 		}
 	);
@@ -111,6 +111,7 @@ $(document).ready(function(){
 $(document).on('keypress', function(e) {
 		var tag = e.target.tagName.toLowerCase();
 		if ( tag != 'input' && tag != 'textarea') {
+		  alert(e.which);
 			if ( e.which == 106 || e.which == 105 ) {// vote down a,j
 				voteDown();
 			}
@@ -121,6 +122,15 @@ $(document).on('keypress', function(e) {
 	});
 function getNewWord(){
 	$.get('/word/', function(content){
+			result = $.parseJSON(content);
+			$('#topicword').html(result['word']);
+			$('#score').html(result['score']);
+			return false;
+	});
+}
+function getTheWord(){
+	var w = $('#wordbox').val();
+	$.get('/word/'+encodeURIComponent(w), function(content){
 			result = $.parseJSON(content);
 			$('#topicword').html(result['word']);
 			$('#score').html(result['score']);
